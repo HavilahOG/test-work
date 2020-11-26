@@ -21,8 +21,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('/prices', function () {
-    //Caching since the file doesn't get changed often
-    return Cache::remember('price-json', 360, function () {
+    //Caching live prices for 30 seconds when simulating real data doesn't seem too bad
+    return Cache::remember('price-json', 30, function () {
         return Storage::disk('local-storage')->get('live_prices.json');
     });
 });
