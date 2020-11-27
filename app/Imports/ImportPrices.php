@@ -7,8 +7,11 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Account;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithStartRow;
 
-class ImportPrices implements ToModel
+class ImportPrices implements ToModel, WithChunkReading, WithBatchInserts, WithStartRow
 {
     /**
     * @param array $row
@@ -25,5 +28,20 @@ class ImportPrices implements ToModel
             'quantity' => $row[3],
             'value' => $row[4],
         ]);
+    }
+
+    public function startRow(): int
+    {
+        return 2;
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
+    }
+
+    public function batchSize(): int
+    {
+        return 500;
     }
 }
