@@ -52,13 +52,13 @@ class GetPrice extends Command
 
         $account = $this->account();
 
-        ////DLWWXS,REDKNN
+        //DLWWXS,REDKNN,LNHLMC
         $data = [];
         if(empty($account)){
             foreach ($products as $product) {
                 //Handle json price comparison
                 $jsonPrices = array_filter($liveArray, function ($jsonProduct) use ($product) {
-                    return $jsonProduct['sku'] == $product->sku;
+                    return $jsonProduct['sku'] == $product->sku && !isset($jsonProduct['account']);
                 });
                 $jsonPrices = array_column($jsonPrices, 'price');
                 $jsonPrice = empty($jsonPrices) ? $jsonPrices : min($jsonPrices);
@@ -70,7 +70,7 @@ class GetPrice extends Command
             foreach ($products as $product) {
                 //Handle json price comparison
                 $jsonPrices = array_filter($liveArray, function ($jsonProduct) use ($product) {
-                    return $jsonProduct['sku'] == $product->sku;
+                    return $jsonProduct['sku'] == $product->sku && isset($jsonProduct['account']);
                 });
                 $jsonPrices = array_column($jsonPrices, 'price');
                 $jsonPrice = empty($jsonPrices) ? $jsonPrices : min($jsonPrices);
