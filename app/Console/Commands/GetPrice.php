@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Price;
 use App\Models\Product;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
 class GetPrice extends Command
 {
@@ -46,20 +47,35 @@ class GetPrice extends Command
         }
 
         $products = Product::whereIn('sku', explode(',', $codes))->get();
+        $liveJson = Storage::disk('local-storage')->get('live_prices.json');
+        $liveArray = json_decode($liveJson, true);
 
-
-        $account =$this->account();
+        $account = $this->account();
 
         ////DLWWXS,REDKNN
         $data = [];
         if(empty($account)){
             foreach ($products as $product) {
-                $price = Price::whereProductId($product->id)->whereNull('account_id')->min('value');
+                //Handle json price comparison
+                $jsonPrices = array_filter($liveArray, function ($jsonProduct) use ($product) {
+                    return $jsonProduct['sku'] == $product->sku;
+                });
+                $jsonPrices = array_column($jsonPrices, 'price');
+                $jsonPrice = empty($jsonPrices) ? $jsonPrices : min($jsonPrices);
+
+                $price = empty($jsonPrice) ? Price::whereProductId($product->id)->whereNull('account_id')->min('value') : $jsonPrice;
                 $data[] = ['sku' => $product->sku, 'price' => $price];
             }
         }else{
             foreach ($products as $product) {
-                $price = Price::whereProductId($product->id)->whereAccountId($account->id)->min('value');
+                //Handle json price comparison
+                $jsonPrices = array_filter($liveArray, function ($jsonProduct) use ($product) {
+                    return $jsonProduct['sku'] == $product->sku;
+                });
+                $jsonPrices = array_column($jsonPrices, 'price');
+                $jsonPrice = empty($jsonPrices) ? $jsonPrices : min($jsonPrices);
+
+                $price = empty($jsonPrice) ? Price::whereProductId($product->id)->whereAccountId($account->id)->min('value') : $jsonPrice;
                 $data[] = ['sku' => $product->sku, 'price' => $price];
             }
         }
